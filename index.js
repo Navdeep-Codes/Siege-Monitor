@@ -4,6 +4,8 @@ const { diff } = require('deep-diff');
 const WEBHOOK_URL = 'https://hooks.airtable.com/workflows/v1/genericWebhook/appnIDvEOHZeznEys/wflEElnCg9y67vkUS/wtrE8ue2yIU4a8k8b';
 const DATA_URL = 'https://raw.githubusercontent.com/Navdeep-Codes/Siege-Monitor/refs/heads/main/store-data.json';
 
+let lastData = null;
+
 async function downloadJson(url) {
     try {
         const res = await axios.get(url);
@@ -26,26 +28,25 @@ async function sendWebhook(changes) {
     }
 }
 
-(async () => {
-    const firstData = await downloadJson(DATA_URL);
-    if (!firstData) {
-        console.error("First download failed, exiting.");
+async function checkForChanges() {
+    const newData = await downloadJson(DATA_URL);
+    if (!newData) {
+        console.error("Download failed, skipping this check.");
         return;
     }
-    setTimeout(async () => {
-        const secondData = await downloadJson(DATA_URL);
-        if (!secondData) {
-            console.error("Second download failed, exiting.");
-            return;
-        }
-        console.log("First data:", JSON.stringify(firstData, null, 2));
-        console.log("Second data:", JSON.stringify(secondData, null, 2));
-        const changes = diff(firstData, secondData);
+    if (lastData) {
+        const changes = diff(lastData, newData);
         if (changes) {
             console.log("Changes detected:", changes);
             await sendWebhook(changes);
         } else {
             console.log("No changes detected.");
         }
-    }, 30000);
-})();
+    } else {
+        console.log("Initial data loaded.");
+    }
+    lastData = newData;
+}
+
+checkForChanges(); 
+setInterval(checkForChanges, 60000);
