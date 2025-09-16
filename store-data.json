@@ -356,6 +356,14 @@
 					"description": "Slim keyboard case for productivity",
 					"requires": "Smart Book Cover",
 					"purchased": false
+				},
+                "rightright3": {
+					"id": "Book_cover",
+					"title": "Book Cover Slim",
+					"price": 50000,
+					"description": "Slim case for Books",
+					"requires": "Book Cover",
+					"purchased": false
 				}
 			}
 		}
