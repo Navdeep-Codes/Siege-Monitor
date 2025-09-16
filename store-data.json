@@ -35,7 +35,7 @@
 				"up": {
 					"id": "cpu_12",
 					"title": "CPU Upgrade",
-					"price": 900,
+					"price": 9000,
 					"description": "get that i5-1334U you've always wanted",
 					"purchased": false
 				},
