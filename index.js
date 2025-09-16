@@ -38,6 +38,8 @@ async function sendWebhook(changes) {
             console.error("Second download failed, exiting.");
             return;
         }
+        console.log("First data:", JSON.stringify(firstData, null, 2));
+        console.log("Second data:", JSON.stringify(secondData, null, 2));
         const changes = diff(firstData, secondData);
         if (changes) {
             console.log("Changes detected:", changes);
