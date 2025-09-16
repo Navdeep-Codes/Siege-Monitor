@@ -46,6 +46,42 @@ function extractChangeInfo(changes) {
     return { newItems, editedItems, removedItems };
 }
 
+function logChangeDetails({ newItems, editedItems, removedItems }) {
+    for (const item of newItems) {
+        const v = item.value;
+        console.log('NEW ITEM:');
+        console.log('Path:', item.path?.join(' > '));
+        console.log('Title:', v.title ?? '(none)');
+        console.log('Price:', v.price ?? '(none)');
+        console.log('Description:', v.description ?? '(none)');
+        console.log('Requires:', v.requires ?? '(none)');
+    }
+    for (const item of editedItems) {
+        const oldV = item.oldValue;
+        const newV = item.newValue;
+        console.log('EDITED ITEM:');
+        console.log('Path:', item.path?.join(' > '));
+        console.log('Old Title:', oldV?.title ?? '(none)');
+        console.log('New Title:', newV?.title ?? '(none)');
+        console.log('Old Price:', oldV?.price ?? '(none)');
+        console.log('New Price:', newV?.price ?? '(none)');
+        console.log('Old Description:', oldV?.description ?? '(none)');
+        console.log('New Description:', newV?.description ?? '(none)');
+        console.log('Old Requires:', oldV?.requires ?? '(none)');
+        console.log('New Requires:', newV?.requires ?? '(none)');
+    }
+    for (const item of removedItems) {
+        const v = item.oldValue;
+        console.log('REMOVED ITEM:');
+        console.log('Path:', item.path?.join(' > '));
+        console.log('Title:', v?.title ?? '(none)');
+        console.log('Price:', v?.price ?? '(none)');
+        console.log('Description:', v?.description ?? '(none)');
+        console.log('Requires:', v?.requires ?? '(none)');
+        console.log('---');
+    }
+}
+
 async function sendWebhook(changes) {
     try {
         await axios.post(WEBHOOK_URL, {
@@ -68,9 +104,7 @@ async function checkForChanges() {
         if (changes) {
             console.log("Changes detected:", changes);
             const { newItems, editedItems, removedItems } = extractChangeInfo(changes);
-            console.log("New items:", newItems);
-            console.log("Edited items:", editedItems);
-            console.log("Removed items:", removedItems);
+            logChangeDetails({ newItems, editedItems, removedItems });
             await sendWebhook(changes);
         } else {
             console.log("No changes detected.");
@@ -83,3 +117,7 @@ async function checkForChanges() {
 
 checkForChanges();
 setInterval(checkForChanges, 60000);
+
+
+
+
