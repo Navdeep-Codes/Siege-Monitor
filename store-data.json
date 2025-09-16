@@ -357,12 +357,21 @@
 					"requires": "Smart Book Cover",
 					"purchased": false
 				},
+                
                 "rightright3": {
 					"id": "Book_cover",
 					"title": "Book Cover Slim",
 					"price": 50000,
 					"description": "Slim case for Books",
-					"requires": "Book Cover",
+					"requires": "Books Cover",
+					"purchased": false
+				},
+                "rightright4": {
+					"id": "Hdunue",
+					"title": "Book sCover Slim",
+					"price": 50000,
+					"description": "Slim1 case for Books",
+					"requires": "Books CoOver",
 					"purchased": false
 				}
 			}
