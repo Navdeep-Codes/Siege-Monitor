@@ -343,10 +343,10 @@
 				},
 				"up2": {
 					"id": "galaxy_tab_s10_plus",
-					"title": "Galaxy Tab S10+",
-					"price": 500,
-					"description": "Premium Samsung tablet with larger display",
-					"requires": "Galaxy Tab S11",
+					"title": "Galaxy Tab S10++",
+					"price": 5000,
+					"description": "Premium Samsung tablet with larger display!",
+					"requires": "Galaxy Tab S111",
 					"purchased": false
 				},
 				"rightright2": {
