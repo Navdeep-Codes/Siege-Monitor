@@ -10,8 +10,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@slack/bolt": "^4.4.0",
     "axios": "^1.12.2",
     "deep-diff": "^1.0.2",
+    "express": "^5.1.0",
     "node-fetch": "^3.3.2"
   }
 }

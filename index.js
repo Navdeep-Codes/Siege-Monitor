@@ -17,6 +17,35 @@ async function downloadJson(url) {
     }
 }
 
+function extractChangeInfo(changes) {
+    const newItems = [];
+    const editedItems = [];
+    const removedItems = [];
+
+    if (!changes) return { newItems, editedItems, removedItems };
+
+    for (const change of changes) {
+        if (change.kind === 'N') {
+            newItems.push({
+                path: change.path,
+                value: change.rhs
+            });
+        } else if (change.kind === 'E') {
+            editedItems.push({
+                path: change.path,
+                oldValue: change.lhs,
+                newValue: change.rhs
+            });
+        } else if (change.kind === 'D') {
+            removedItems.push({
+                path: change.path,
+                oldValue: change.lhs
+            });
+        }
+    }
+    return { newItems, editedItems, removedItems };
+}
+
 async function sendWebhook(changes) {
     try {
         await axios.post(WEBHOOK_URL, {
@@ -38,6 +67,10 @@ async function checkForChanges() {
         const changes = diff(lastData, newData);
         if (changes) {
             console.log("Changes detected:", changes);
+            const { newItems, editedItems, removedItems } = extractChangeInfo(changes);
+            console.log("New items:", newItems);
+            console.log("Edited items:", editedItems);
+            console.log("Removed items:", removedItems);
             await sendWebhook(changes);
         } else {
             console.log("No changes detected.");
@@ -48,5 +81,5 @@ async function checkForChanges() {
     lastData = newData;
 }
 
-checkForChanges(); 
+checkForChanges();
 setInterval(checkForChanges, 60000);
