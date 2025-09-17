@@ -1,10 +1,20 @@
+const { App } = require('@slack/bolt');
 const axios = require('axios');
 const { diff } = require('deep-diff');
 
-const WEBHOOK_URL = 'https://hooks.airtable.com/workflows/v1/genericWebhook/appnIDvEOHZeznEys/wflEElnCg9y67vkUS/wtrE8ue2yIU4a8k8b';
+const SLACK_BOT_TOKEN = ''; 
+const SLACK_SIGNING_SECRET = ''; 
+const SLACK_CHANNEL_ID = 'C09FDRR10TF'; 
 const DATA_URL = 'https://raw.githubusercontent.com/Navdeep-Codes/Siege-Monitor/refs/heads/main/store-data.json';
 
 let lastData = null;
+
+const slackApp = new App({
+    token: SLACK_BOT_TOKEN,
+    signingSecret: SLACK_SIGNING_SECRET,
+    socketMode: false,
+    appToken: '', 
+});
 
 async function downloadJson(url) {
     try {
@@ -46,51 +56,72 @@ function extractChangeInfo(changes) {
     return { newItems, editedItems, removedItems };
 }
 
-function logChangeDetails({ newItems, editedItems, removedItems }) {
-    for (const item of newItems) {
-        const v = item.value;
-        console.log('NEW ITEM:');
-        console.log('Path:', item.path?.join(' > '));
-        console.log('Title:', v.title ?? '(none)');
-        console.log('Price:', v.price ?? '(none)');
-        console.log('Description:', v.description ?? '(none)');
-        console.log('Requires:', v.requires ?? '(none)');
-    }
-    for (const item of editedItems) {
-        const oldV = item.oldValue;
-        const newV = item.newValue;
-        console.log('EDITED ITEM:');
-        console.log('Path:', item.path?.join(' > '));
-        console.log('Old Title:', oldV?.title ?? '(none)');
-        console.log('New Title:', newV?.title ?? '(none)');
-        console.log('Old Price:', oldV?.price ?? '(none)');
-        console.log('New Price:', newV?.price ?? '(none)');
-        console.log('Old Description:', oldV?.description ?? '(none)');
-        console.log('New Description:', newV?.description ?? '(none)');
-        console.log('Old Requires:', oldV?.requires ?? '(none)');
-        console.log('New Requires:', newV?.requires ?? '(none)');
-    }
-    for (const item of removedItems) {
-        const v = item.oldValue;
-        console.log('REMOVED ITEM:');
-        console.log('Path:', item.path?.join(' > '));
-        console.log('Title:', v?.title ?? '(none)');
-        console.log('Price:', v?.price ?? '(none)');
-        console.log('Description:', v?.description ?? '(none)');
-        console.log('Requires:', v?.requires ?? '(none)');
-        console.log('---');
-    }
+function buildNewItemBlock(item) {
+    const v = item.value;
+    return {
+        type: "section",
+        text: {
+            type: "mrkdwn",
+            text: `:new: *${v.title ?? '(none :sadge:)'}* (:siege-coin: ${v?.price ?? '(none :sadge:)'})\n${v.description ?? '(none :sadge:)'}\n*Requires:* ${v.requires ?? '(none :sadge:)'}\n*Path:* ${item.path?.join(' > ')}`
+        }
+    };
 }
 
-async function sendWebhook(changes) {
-    try {
-        await axios.post(WEBHOOK_URL, {
-            content: `Changes detected:\n${JSON.stringify(changes, null, 2)}`
-        });
-        console.log("Webhook sent!");
-    } catch (err) {
-        console.error("Failed to send webhook:", err.message);
+function buildEditedItemBlock(item) {
+    const oldV = item.oldValue || {};
+    const newV = item.newValue || {};
+    const path = item.path?.join(' > ');
+
+    let lines = [':pencil2: *Edited Item*'];
+    if (oldV.title !== newV.title) {
+        lines.push(`*Title:* ${oldV.title ?? '(none)'} → ${newV.title ?? '(none)'}`);
+    } else {
+        lines.push(`*Title:* ${newV.title ?? '(none)'}`);
     }
+    if (oldV.price !== newV.price) {
+        lines.push(`*Price:* ${oldV.price ?? '(none)'} → ${newV.price ?? '(none)'}`);
+    } else {
+        lines.push(`*Price:* ${newV.price ?? '(none)'}`);
+    }
+    if (oldV.description !== newV.description) {
+        lines.push(`*Description:* ${oldV.description ?? '(none)'} → ${newV.description ?? '(none)'}`);
+    } else {
+        lines.push(`*Description:* ${newV.description ?? '(none)'}`);
+    }
+    if (oldV.requires !== newV.requires) {
+        lines.push(`*Requires:* ${oldV.requires ?? '(none)'} → ${newV.requires ?? '(none)'}`);
+    } else {
+        lines.push(`*Requires:* ${newV.requires ?? '(none)'}`);
+    }
+    lines.push(`*Path:* ${path}`);
+
+    return {
+        type: "section",
+        text: {
+            type: "mrkdwn",
+            text: lines.join('\n')
+        }
+    };
+}
+
+function buildRemovedItemBlock(item) {
+    const v = item.oldValue;
+    return {
+        type: "section",
+        text: {
+            type: "mrkdwn",
+            text: `:win10-trash: *${v.title ?? '(none :sadge:)'}* (:siege-coin: ${v?.price ?? '(none :sadge:)'})\n${v.description ?? '(none :sadge:)'}\n*Requires:* ${v.requires ?? '(none :sadge:)'}\n*Path:* ${item.path?.join(' > ')}`
+        }
+    };
+}
+
+async function sendSlackBlocks(blocks) {
+    if (blocks.length === 0) return;
+    await slackApp.client.chat.postMessage({
+        channel: SLACK_CHANNEL_ID,
+        blocks: blocks
+    });
+    console.log("Slack message sent!");
 }
 
 async function checkForChanges() {
@@ -104,8 +135,13 @@ async function checkForChanges() {
         if (changes) {
             console.log("Changes detected:", changes);
             const { newItems, editedItems, removedItems } = extractChangeInfo(changes);
-            logChangeDetails({ newItems, editedItems, removedItems });
-            await sendWebhook(changes);
+
+            const blocks = [];
+            newItems.forEach(item => blocks.push(buildNewItemBlock(item)));
+            editedItems.forEach(item => blocks.push(buildEditedItemBlock(item)));
+            removedItems.forEach(item => blocks.push(buildRemovedItemBlock(item)));
+
+            await sendSlackBlocks(blocks);
         } else {
             console.log("No changes detected.");
         }
@@ -115,9 +151,11 @@ async function checkForChanges() {
     lastData = newData;
 }
 
-checkForChanges();
-setInterval(checkForChanges, 60000);
-
-
+(async () => {
+    await slackApp.start();
+    console.log('Slack Bolt app started!');
+    checkForChanges();
+    setInterval(checkForChanges, 60000);
+})();
 
 
