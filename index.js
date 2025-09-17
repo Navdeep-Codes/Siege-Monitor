@@ -1,9 +1,12 @@
 const { App } = require('@slack/bolt');
 const axios = require('axios');
 const { diff } = require('deep-diff');
+const dotenv = require('dotenv');
 
-const SLACK_BOT_TOKEN = ''; 
-const SLACK_SIGNING_SECRET = ''; 
+dotenv.config();
+
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN; 
+const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET; 
 const SLACK_CHANNEL_ID = 'C09FDRR10TF'; 
 const DATA_URL = 'https://raw.githubusercontent.com/Navdeep-Codes/Siege-Monitor/refs/heads/main/store-data.json';
 
