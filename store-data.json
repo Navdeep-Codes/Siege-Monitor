@@ -37,6 +37,15 @@
 					"currentPurchases": 0,
 					"purchased": false
 				},
+				"left2": {
+					"id": "ram_12",
+					"title": "+8GB RAM",
+					"price": 15000,
+					"description": "get your ram game up!!!!",
+					"maxPurchases": 7,
+					"currentPurchases": 0,
+					"purchased": false
+				},
 				"up": {
 					"id": "cpu_12",
 					"title": "CPU Upgrade",
@@ -49,14 +58,6 @@
 					"title": "1TB SSD",
 					"price": 300,
 					"description": "you can download your whole steam library on this one!",
-					"purchased": false
-				},
-				"up2": {
-					"id": "framework_13_upgrade",
-					"title": "Framework 13",
-					"price": 300,
-					"description": "woah is that 1 more inch? that'll be 50 coins! (ts is the 7640U that I have :D)",
-					"requires": "CPU Upgrade",
 					"purchased": false
 				},
 				"rightright2": {
