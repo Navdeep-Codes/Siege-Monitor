@@ -30,87 +30,6 @@ async function downloadJson(url) {
     }
 }
 
-function extractChangeInfo(changes) {
-    const newItems = [];
-    const editedItems = [];
-    const removedItems = [];
-
-    if (!changes) return { newItems, editedItems, removedItems };
-
-    for (const change of changes) {
-        if (change.kind === 'N') {
-            if (Array.isArray(change.path) && change.path.includes('options')) {
-                newItems.push({
-                    path: change.path,
-                    value: change.rhs
-                });
-            } else {
-                newItems.push({
-                    path: change.path,
-                    value: change.rhs
-                });
-            }
-        } else if (change.kind === 'E') {
-            editedItems.push({
-                path: change.path,
-                oldValue: change.lhs,
-                newValue: change.rhs
-            });
-        } else if (change.kind === 'D') {
-            if (Array.isArray(change.path) && change.path.includes('options')) {
-                removedItems.push({
-                    path: change.path,
-                    oldValue: change.lhs
-                });
-            } else {
-                removedItems.push({
-                    path: change.path,
-                    oldValue: change.lhs
-                });
-            }
-        }
-    }
-    return { newItems, editedItems, removedItems };
-}
-
-function buildNewItemBlock(item) {
-    if (item.path?.includes('options')) {
-        const v = item.value;
-        return {
-            type: "header",
-            text: {
-                type: "plain_text",
-                text: ":new: *${v.title ?? '(none :sadge:)'}* (Option Added)",
-                emoji: true
-            }
-        },
-            {
-            type: "section",
-            text: {
-                type: "mrkdwn",
-                text: `${v.description ?? '(none :sadge:)'}\n*Path:* ${item.path?.join(' > ')}`
-            }
-        },
-        {
-			"type": "context",
-			"elements": [
-				{
-					"type": "mrkdwn",
-					"text": "pinging @channel · :star: <https://github.com/Navdeep-Codes/Siege-Monitor/ | star the repo>"
-				}
-			]
-		}
-    }
-    const v = item.value;
-    return {
-        type: "section",
-        text: {
-            type: "mrkdwn",
-            text: `:new: *${v.title ?? '(none :sadge:)'}* (:siege-coin: ${v?.price ?? '(none :sadge:)'})\n${v.description ?? '(none :sadge:)'}\n*Requires:* ${v.requires ?? '(none :sadge:)'}\n*Path:* ${item.path?.join(' > ')}`
-        }
-    };
-}
-
 function buildEditedItemBlock(item) {
     const oldV = item.oldValue || {};
     const newV = item.newValue || {};
@@ -178,12 +97,22 @@ async function checkForChanges() {
         const changes = diff(lastData, newData);
         if (changes) {
             console.log("Changes detected:", changes);
-            const { newItems, editedItems, removedItems } = extractChangeInfo(changes);
 
             const blocks = [];
-            newItems.forEach(item => blocks.push(buildNewItemBlock(item)));
-            editedItems.forEach(item => blocks.push(buildEditedItemBlock(item)));
-            removedItems.forEach(item => blocks.push(buildRemovedItemBlock(item)));
+            changes.forEach(change => {
+                if (change.kind === 'E') {
+                    blocks.push(buildEditedItemBlock({
+                        path: change.path,
+                        oldValue: change.lhs,
+                        newValue: change.rhs
+                    }));
+                } else if (change.kind === 'D') {
+                    blocks.push(buildRemovedItemBlock({
+                        path: change.path,
+                        oldValue: change.lhs
+                    }));
+                }
+            });
 
             await sendSlackBlocks(blocks);
         } else {
