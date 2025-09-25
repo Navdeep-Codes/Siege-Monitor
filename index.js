@@ -96,7 +96,7 @@ function buildNewItemBlock(item) {
 			"elements": [
 				{
 					"type": "mrkdwn",
-					"text": "pinging @channel · :star: <https://github.com/Navdeep-Codes/Siege-Monitor/|star the repo>"
+					"text": "pinging @channel · :star: <https://github.com/Navdeep-Codes/Siege-Monitor/ | star the repo>"
 				}
 			]
 		}
