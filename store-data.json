@@ -18,11 +18,6 @@
 					"id": "framework_13",
 					"title": "Framework 13 Mainboard",
 					"description": "like a laptop but no top... or bottom... or sides..."
-				},
-				{
-					"id": "framework_16",
-					"title": "Framework 16",
-					"description": "The Beast!"
 				}
 			]
 		},
@@ -377,14 +372,6 @@
 					"price": 50000,
 					"description": "Slim1 case for Books",
 					"requires": "Books CoOver",
-					"purchased": false
-				},
-				"up3": {
-					"id": "galaxy_tab_s103_plus",
-					"title": "Galaxy Tab S310++",
-					"price": 50000,
-					"description": "Premiu3m Samsung tablet with larger display!",
-					"requires": "Galaxy 3Tab S111",
 					"purchased": false
 				}
 			}

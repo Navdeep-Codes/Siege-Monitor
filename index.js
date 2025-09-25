@@ -39,10 +39,17 @@ function extractChangeInfo(changes) {
 
     for (const change of changes) {
         if (change.kind === 'N') {
-            newItems.push({
-                path: change.path,
-                value: change.rhs
-            });
+            if (Array.isArray(change.path) && change.path.includes('options')) {
+                newItems.push({
+                    path: change.path,
+                    value: change.rhs
+                });
+            } else {
+                newItems.push({
+                    path: change.path,
+                    value: change.rhs
+                });
+            }
         } else if (change.kind === 'E') {
             editedItems.push({
                 path: change.path,
@@ -50,16 +57,50 @@ function extractChangeInfo(changes) {
                 newValue: change.rhs
             });
         } else if (change.kind === 'D') {
-            removedItems.push({
-                path: change.path,
-                oldValue: change.lhs
-            });
+            if (Array.isArray(change.path) && change.path.includes('options')) {
+                removedItems.push({
+                    path: change.path,
+                    oldValue: change.lhs
+                });
+            } else {
+                removedItems.push({
+                    path: change.path,
+                    oldValue: change.lhs
+                });
+            }
         }
     }
     return { newItems, editedItems, removedItems };
 }
 
 function buildNewItemBlock(item) {
+    if (item.path?.includes('options')) {
+        const v = item.value;
+        return {
+            type: "header",
+            text: {
+                type: "plain_text",
+                text: ":new: *${v.title ?? '(none :sadge:)'}* (Option Added)",
+                emoji: true
+            }
+        },
+            {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `${v.description ?? '(none :sadge:)'}\n*Path:* ${item.path?.join(' > ')}`
+            }
+        },
+        {
+			"type": "context",
+			"elements": [
+				{
+					"type": "mrkdwn",
+					"text": "pinging @channel · :star: <https://github.com/Navdeep-Codes/Siege-Monitor/|star the repo>"
+				}
+			]
+		}
+    }
     const v = item.value;
     return {
         type: "section",
@@ -154,11 +195,29 @@ async function checkForChanges() {
     lastData = newData;
 }
 
+async function sendStatusMessage(text) {
+    await slackApp.client.chat.postMessage({
+        channel: SLACK_CHANNEL_ID,
+        text: text
+    });
+}
+
 (async () => {
     await slackApp.start();
     console.log('Slack Bolt app started!');
+    await sendStatusMessage(':yayayayayay: Siege Monitor is back online!');
     checkForChanges();
     setInterval(checkForChanges, 60000);
+    
 })();
+
+process.on('SIGINT', async () => {
+    await sendStatusMessage(':siren-real: Siege Monitor is going offline!');
+    process.exit();
+});
+process.on('SIGTERM', async () => {
+    await sendStatusMessage(':siren-real: Siege Monitor is going offline!');
+    process.exit();
+});
 
 
