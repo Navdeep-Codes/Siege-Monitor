@@ -8,7 +8,7 @@ dotenv.config();
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN; 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET; 
 const SLACK_CHANNEL_ID = 'C09FDRR10TF'; 
-const DATA_URL = 'https://raw.githubusercontent.com/Navdeep-Codes/Siege-Monitor/refs/heads/main/store-data.json';
+const DATA_URL = 'https://raw.githubusercontent.com/hackclub/siege/refs/heads/main/config/tech_tree_data.json';
 
 let lastData = null;
 
